@@ -1,9 +1,8 @@
-import sys
 import unittest
-from pathlib import Path
 
+from tests._path_setup import add_alignment_engine_src
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+add_alignment_engine_src()
 
 from alignment_engine.agent.graph import (  # noqa: E402
     AgentState,

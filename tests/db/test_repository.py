@@ -1,11 +1,11 @@
-import sys
 import unittest
-from pathlib import Path
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from tests._path_setup import add_alignment_engine_src
+
+add_alignment_engine_src()
 
 from alignment_engine.db.models import Base  # noqa: E402
 from alignment_engine.db.repository import JobRepository, UserRepository  # noqa: E402
