@@ -1,0 +1,338 @@
+openapi: 3.1.0
+info:
+  title: Job-to-Candidate Alignment Engine API
+  version: 0.1.0
+  description: |
+    MVP API for resume ingestion, job ingestion, matching, resume optimization,
+    and agent run orchestration.
+servers:
+  - url: https://api.example.com
+    description: Production
+  - url: http://localhost:8000
+    description: Local development
+tags:
+  - name: Resume
+  - name: Jobs
+  - name: Matching
+  - name: Agents
+paths:
+  /resume/upload:
+    post:
+      tags: [Resume]
+      summary: Upload a source resume
+      operationId: uploadResume
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResumeUploadRequest"
+      responses:
+        "201":
+          description: Resume created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResumeUploadResponse"
+  /resume/{user_id}:
+    get:
+      tags: [Resume]
+      summary: Get latest source resume for a user
+      operationId: getResumeByUser
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Resume found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResumeRecord"
+        "404":
+          description: Resume not found
+  /jobs/ingest:
+    post:
+      tags: [Jobs]
+      summary: Ingest and normalize jobs
+      operationId: ingestJobs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JobsIngestRequest"
+      responses:
+        "200":
+          description: Jobs ingested
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JobsIngestResponse"
+  /jobs:
+    get:
+      tags: [Jobs]
+      summary: List jobs for matching surfaces
+      operationId: listJobs
+      parameters:
+        - in: query
+          name: user_id
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Jobs list
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [jobs]
+                properties:
+                  jobs:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/JobRecord"
+  /match/run:
+    post:
+      tags: [Matching]
+      summary: Run one resume-to-job match
+      operationId: runMatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatchRunRequest"
+      responses:
+        "200":
+          description: Match result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchRunResponse"
+  /resume/optimize:
+    post:
+      tags: [Matching]
+      summary: Generate a job-specific resume version
+      operationId: optimizeResume
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResumeOptimizeRequest"
+      responses:
+        "200":
+          description: Resume version created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResumeOptimizeResponse"
+  /agent/run:
+    post:
+      tags: [Agents]
+      summary: Trigger end-to-end agent pipeline
+      operationId: runAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AgentRunRequest"
+      responses:
+        "202":
+          description: Agent run accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentRunResponse"
+components:
+  schemas:
+    ResumeUploadRequest:
+      type: object
+      required: [user_id, content, raw_text]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        content:
+          type: object
+          additionalProperties: true
+        raw_text:
+          type: string
+    ResumeUploadResponse:
+      type: object
+      required: [resume_id]
+      properties:
+        resume_id:
+          type: string
+          format: uuid
+    ResumeRecord:
+      type: object
+      required: [id, user_id, content, raw_text, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        content:
+          type: object
+          additionalProperties: true
+        raw_text:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    JobIngestRecord:
+      type: object
+      required: [title, company, location, description, source, url]
+      properties:
+        title:
+          type: string
+        company:
+          type: string
+        location:
+          type: string
+        description:
+          type: string
+        source:
+          type: string
+        url:
+          type: string
+          format: uri
+        posted_at:
+          type: string
+          format: date-time
+    JobsIngestRequest:
+      type: object
+      required: [jobs]
+      properties:
+        jobs:
+          type: array
+          items:
+            $ref: "#/components/schemas/JobIngestRecord"
+    JobsIngestResponse:
+      type: object
+      required: [ingested_count, job_ids]
+      properties:
+        ingested_count:
+          type: integer
+          minimum: 0
+        job_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+    JobRecord:
+      type: object
+      required:
+        [id, title, company, location, description, source, url, posted_at, created_at]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        company:
+          type: string
+        location:
+          type: string
+        description:
+          type: string
+        source:
+          type: string
+        url:
+          type: string
+          format: uri
+        posted_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+    MatchRunRequest:
+      type: object
+      required: [user_id, job_id]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        job_id:
+          type: string
+          format: uuid
+    MatchExplanation:
+      type: object
+      required: [reasoning]
+      properties:
+        skill_overlap:
+          type: array
+          items:
+            type: string
+        missing_skills:
+          type: array
+          items:
+            type: string
+        reasoning:
+          type: string
+    MatchRunResponse:
+      type: object
+      required: [score, reason, explanation]
+      properties:
+        score:
+          type: number
+          minimum: 0
+          maximum: 1
+        reason:
+          type: string
+        explanation:
+          $ref: "#/components/schemas/MatchExplanation"
+    ResumeOptimizeRequest:
+      type: object
+      required: [user_id, job_id]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        job_id:
+          type: string
+          format: uuid
+    ResumeOptimizeResponse:
+      type: object
+      required: [resume_version_id, changes_summary]
+      properties:
+        resume_version_id:
+          type: string
+          format: uuid
+        changes_summary:
+          type: string
+    AgentRunRequest:
+      type: object
+      required: [user_id, type]
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [manual, cron]
+        input:
+          type: object
+          additionalProperties: true
+    AgentRunResponse:
+      type: object
+      required: [run_id, status]
+      properties:
+        run_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [queued, running, completed, failed]
