@@ -1,5 +1,20 @@
 # joblo
 
+## Docker
+
+Run the API with Docker:
+
+```bash
+docker compose up --build
+```
+
+The API will be available at `http://localhost:8000`.
+
+Environment variables:
+
+- `DATABASE_URL` (optional): overrides the default sqlite URL.
+  - Default: `sqlite+pysqlite:///./alignment_engine.db`
+
 ## Cloud agent environment
 
 This repo configures Cursor Cloud agents via `.cursor/environment.json`.
