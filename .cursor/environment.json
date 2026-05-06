@@ -1,0 +1,4 @@
+{
+  "install": "python3 scripts/monorepo_bootstrap.py",
+  "start": "python3 --version"
+}

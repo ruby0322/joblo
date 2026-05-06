@@ -1,9 +1,9 @@
-import sys
 import unittest
-from pathlib import Path
 
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
+from tests._path_setup import add_alignment_engine_src
+
+add_alignment_engine_src()
 
 from alignment_engine.agent.flow import (  # noqa: E402
     MatchResult,
