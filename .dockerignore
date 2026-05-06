@@ -1,0 +1,11 @@
+.git
+.cursor
+.ruff_cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.log
+.env
+alignment_engine.db
+tests

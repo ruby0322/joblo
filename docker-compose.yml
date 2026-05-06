@@ -1,0 +1,15 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: sqlite+pysqlite:////app/data/alignment_engine.db
+      PYTHONPATH: /app/src
+    volumes:
+      - app_data:/app/data
+
+volumes:
+  app_data:
